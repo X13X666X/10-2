@@ -4,66 +4,80 @@
 #include <string>
 using namespace std;
 
-std::string FilterLettersBeforeSpace(const std::string& input) {
-    std::string result;
-    for (char ch : input) {
-        if (ch == ' ') {
-            break;
+void CreateInputFile(const char* filename) {
+    ofstream fout(filename);
+    fout << "123a!b@c D456ef gh!12iJKL" << endl;
+    fout.close();
+}
+
+void ProcessFile(const char* inputFilename, const char* outputFilename) {
+    ifstream fin(inputFilename);
+    ofstream fout(outputFilename);
+    bool foundSpace = false;
+    char ch;
+    while (fin.get(ch)) {
+        if (!foundSpace) {
+            if (ch == ' ') {
+                foundSpace = true;
+                fout.put(ch);  // записуємо пробіл
+            }
+            else {
+                if (isalpha(ch))  // записуємо лише літери
+                    fout.put(ch);
+            }
         }
-        if (isalpha(static_cast<unsigned char>(ch))) {
-            result += ch;
+        else {
+            fout.put(ch);  // усе після першого пробілу — як є
         }
     }
-    return result;
+    fin.close();
+    fout.close();
+}
+
+void PrintFile(const char* filename) {
+    ifstream fin(filename);
+    string line;
+    while (getline(fin, line))
+        cout << line << endl;
+    fin.close();
+}
+
+int DisplayMenu() {
+    int choice;
+    cout << "\nMenu:" << endl;
+    cout << "1. Process file t1 -> t2" << endl;
+    cout << "0. Exit" << endl;
+    cout << "Enter your choice: ";
+    while (!(cin >> choice)) {
+        cin.clear();
+        while (cin.get() != '\n');
+        cout << "Invalid input. Please try again: ";
+    }
+    return choice;
 }
 
 int main() {
-    ifstream testFile("t1.txt");
-    if (!testFile.good()) {
-        ofstream createFile("t1.txt");
-        createFile << "123Hel!lo Wo*rld this is a test";
-        createFile.close();
-        cout << "File t1.txt created with sample content." << endl;
-    }
-    testFile.close();
+    const char* t1 = "t1.txt";
+    const char* t2 = "t2.txt";
 
-    ifstream inFile("t1.txt");
-    ofstream outFile("t2.txt");
+    CreateInputFile(t1);
 
-    if (!inFile.is_open()) {
-        cerr << "Failed to open file t1.txt" << endl;
-        return 1;
-    }
-
-    char ch;
-    while (inFile.get(ch)) {
-        if (ch == ' ') {
+    int choice;
+    do {
+        choice = DisplayMenu();
+        switch (choice) {
+        case 1:
+            ProcessFile(t1, t2);
+            cout << "\nProcessed file (t2):" << endl;
+            PrintFile(t2);
             break;
+        case 0:
+            cout << "Exiting the program." << endl;
+            break;
+        default:
+            cout << "Invalid choice. Please try again." << endl;
         }
-        if (isalpha(static_cast<unsigned char>(ch))) {
-            outFile << ch;
-        }
-    }
-
-    inFile.close();
-    outFile.close();
-
-    cout << "Processing completed. Result written to t2.txt" << endl;
-
-    cout << "\nContents of t1.txt:" << endl;
-    ifstream readT1("t1.txt");
-    string line;
-    while (getline(readT1, line)) {
-        cout << line << endl;
-    }
-    readT1.close();
-
-    cout << "\nContents of t2.txt:" << endl;
-    ifstream readT2("t2.txt");
-    while (getline(readT2, line)) {
-        cout << line << endl;
-    }
-    readT2.close();
+    } while (choice != 0);
 
     return 0;
 }
